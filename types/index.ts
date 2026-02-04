@@ -31,6 +31,29 @@ export enum EventStatus {
 
 // ==================== INTERFACES ====================
 
+export interface ICompanySettings {
+  timezone: string;
+  currency: string;
+  language: string;
+}
+
+export interface ICompany {
+  _id: string;
+  name: string;
+  slug: string;
+  email: string;
+  phone?: string;
+  address?: string;
+  logo?: string;
+  website?: string;
+  taxId?: string;
+  isActive: boolean;
+  settings: ICompanySettings;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface IUser {
   _id: string;
   email: string;
@@ -39,6 +62,7 @@ export interface IUser {
   phone?: string;
   role: UserRole;
   isActive: boolean;
+  companyId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,6 +74,7 @@ export interface IEventAssignment {
   role: UserRole;
   permissions: string[];
   assignedBy: string;
+  companyId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -81,6 +106,7 @@ export interface IEvent {
   ticketConfigs: ITicketConfig[];
   shareableLink: string;
   createdBy: string;
+  companyId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -99,6 +125,7 @@ export interface ITicket {
   checkedInBy?: string;
   price: number;
   purchasedAt: Date;
+  companyId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -113,6 +140,7 @@ export interface IRegistrationLink {
   expiresAt?: Date;
   isActive: boolean;
   createdBy: string;
+  companyId: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -157,6 +185,7 @@ export interface JWTPayload {
   userId: string;
   email: string;
   role: UserRole;
+  companyId: string;
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -166,6 +195,12 @@ export interface AuthenticatedRequest extends Request {
 // ==================== PERMISSION TYPES ====================
 
 export const PERMISSIONS = {
+  // Company permissions
+  COMPANY_CREATE: 'company:create',
+  COMPANY_READ: 'company:read',
+  COMPANY_UPDATE: 'company:update',
+  COMPANY_DELETE: 'company:delete',
+
   // Event permissions
   EVENT_CREATE: 'event:create',
   EVENT_READ: 'event:read',

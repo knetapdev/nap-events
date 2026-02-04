@@ -1,192 +1,237 @@
+'use client';
+
 import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-orange-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Subtle background gradient - single, minimal */}
+      <div className="fixed inset-0 bg-gradient-to-br from-purple-950/40 via-zinc-950 to-zinc-950 pointer-events-none" />
 
       {/* Navigation */}
-      <nav className="relative z-10 container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold bg-linear-to-r from-orange-400 to-cyan-400 bg-clip-text text-transparent">
-            NapEvents
-          </div>
-          <div className="flex gap-4">
+      <nav className="relative z-10 border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span className="text-lg font-semibold tracking-tight">
+              NapEvents
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-6">
             <Link
               href="/auth/login"
-              className="px-6 py-2 text-white hover:text-orange-300 transition-colors"
+              className="text-sm text-zinc-400 hover:text-white transition-colors"
             >
-              Iniciar Sesión
+              Iniciar Sesion
             </Link>
             <Link
               href="/auth/register"
-              className="px-6 py-2 bg-linear-to-r from-orange-500 to-amber-500 text-white rounded-lg hover:from-orange-600 hover:to-amber-600 transition-all transform hover:scale-105"
+              className="text-sm px-4 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg font-medium transition-colors"
             >
-              Registrarse
+              Comenzar Gratis
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10 container mx-auto px-4 py-20">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-6xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Gestiona tus eventos
-            <span className="block bg-gradient-to-r from-orange-400 via-amber-400 to-cyan-400 bg-clip-text text-transparent">
-              de forma profesional
+      <section className="relative z-10 max-w-6xl mx-auto px-6 pt-24 pb-20">
+        <div className="max-w-3xl">
+          {/* Small badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-xs text-purple-300 font-medium">+500 eventos este mes</span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1] mb-6">
+            Crea eventos que
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-purple-400">
+              nadie olvida
             </span>
           </h1>
-          <p className="text-xl text-slate-300 mb-10 leading-relaxed">
-            La plataforma completa para crear, gestionar y controlar el acceso a tus eventos.
-            Vende entradas, genera códigos QR y obtén reportes en tiempo real.
+
+          {/* Subheadline */}
+          <p className="text-lg text-zinc-400 leading-relaxed mb-10 max-w-xl">
+            Gestiona tickets, controla accesos con QR y coordina tu equipo.
+            Todo en una plataforma simple y profesional.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+
+          {/* CTAs */}
+          <div className="flex flex-wrap gap-4">
             <Link
               href="/auth/register"
-              className="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all transform hover:scale-105 shadow-2xl"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-lg font-semibold transition-colors"
             >
-              Comenzar Gratis
+              Crear Mi Primer Evento
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
             </Link>
             <Link
               href="#features"
-              className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white font-semibold rounded-xl hover:bg-white/20 transition-all border border-white/20"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg font-medium transition-colors"
             >
-              Ver Características
+              Ver como funciona
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="relative z-10 container mx-auto px-4 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-          {[
-            { number: '1000+', label: 'Eventos Creados' },
-            { number: '50K+', label: 'Entradas Vendidas' },
-            { number: '500+', label: 'Organizadores' },
-            { number: '99.9%', label: 'Uptime' },
-          ].map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">{stat.number}</div>
-              <div className="text-slate-400">{stat.label}</div>
-            </div>
-          ))}
+      {/* Stats bar */}
+      <section className="relative z-10 border-y border-white/5 bg-white/[0.02]">
+        <div className="max-w-6xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { value: '10K+', label: 'Eventos creados' },
+              { value: '500K+', label: 'Tickets emitidos' },
+              { value: '2K+', label: 'Organizadores' },
+              { value: '99.9%', label: 'Uptime' },
+            ].map((stat, i) => (
+              <div key={i} className="text-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.value}</div>
+                <div className="text-sm text-zinc-500">{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="relative z-10 container mx-auto px-4 py-20">
+      {/* Features */}
+      <section id="features" className="relative z-10 max-w-6xl mx-auto px-6 py-24">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Todo lo que necesitas
-          </h2>
-          <p className="text-xl text-slate-300">
-            Herramientas profesionales para gestionar tus eventos
-          </p>
+          <p className="text-sm text-purple-400 font-medium uppercase tracking-wider mb-3">Caracteristicas</p>
+          <h2 className="text-3xl md:text-4xl font-bold">Todo lo que necesitas</h2>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[
             {
               icon: '🎫',
-              title: 'Gestión de Entradas',
-              description: 'Crea entradas FREE, VIP y personalizadas. Control total de precios y disponibilidad.',
+              title: 'Gestion de Tickets',
+              desc: 'Crea entradas FREE, VIP o personalizadas. Control total de precios y stock.'
             },
             {
               icon: '📱',
-              title: 'Códigos QR',
-              description: 'Genera códigos QR únicos para cada entrada. Validación rápida en el check-in.',
+              title: 'Codigos QR',
+              desc: 'Cada ticket genera un QR unico. Validacion instantanea en la entrada.'
             },
             {
               icon: '👥',
-              title: 'Equipos y Roles',
-              description: 'Asigna roles a tu equipo: administradores, promotores, staff y más.',
+              title: 'Equipos',
+              desc: 'Asigna roles a tu staff: admins, promotores, personal de puerta.'
             },
             {
               icon: '🔗',
-              title: 'Enlaces Compartibles',
-              description: 'Genera enlaces personalizados para registro gratuito o promociones especiales.',
+              title: 'Links de Registro',
+              desc: 'Crea links personalizados para promociones y campañas.'
             },
             {
               icon: '📊',
-              title: 'Reportes en Tiempo Real',
-              description: 'Visualiza estadísticas y métricas de tus eventos al instante.',
+              title: 'Analytics',
+              desc: 'Metricas en tiempo real. Conoce el pulso de tu evento.'
             },
             {
-              icon: '🔐',
-              title: 'Control de Acceso',
-              description: 'Check-in rápido y seguro con validación de tickets en tiempo real.',
+              icon: '✓',
+              title: 'Check-in Seguro',
+              desc: 'Sistema anti-fraude. Cada entrada se valida una sola vez.'
             },
-          ].map((feature, index) => (
+          ].map((feature, i) => (
             <div
-              key={index}
-              className="p-8 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 hover:bg-white/10 transition-all hover:scale-105 hover:border-orange-500/50"
+              key={i}
+              className="group p-6 rounded-xl bg-white/[0.02] border border-white/5 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all duration-300"
             >
-              <div className="text-5xl mb-4">{feature.icon}</div>
-              <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-              <p className="text-slate-300">{feature.description}</p>
+              <div className="text-3xl mb-4">{feature.icon}</div>
+              <h3 className="text-lg font-semibold mb-2 text-white">{feature.title}</h3>
+              <p className="text-sm text-zinc-400 leading-relaxed">{feature.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="relative z-10 container mx-auto px-4 py-20">
+      {/* How it works */}
+      <section className="relative z-10 max-w-6xl mx-auto px-6 py-24">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            ¿Cómo funciona?
-          </h2>
-          <p className="text-xl text-slate-300">
-            Crea tu evento en minutos
-          </p>
+          <p className="text-sm text-pink-400 font-medium uppercase tracking-wider mb-3">Proceso</p>
+          <h2 className="text-3xl md:text-4xl font-bold">Simple y rapido</h2>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-4 gap-8">
           {[
-            { step: '1', title: 'Regístrate', description: 'Crea tu cuenta gratis en segundos' },
-            { step: '2', title: 'Crea tu Evento', description: 'Configura fecha, lugar y tipos de entrada' },
-            { step: '3', title: 'Comparte', description: 'Envía enlaces de registro a tus invitados' },
-            { step: '4', title: 'Gestiona', description: 'Controla el acceso y visualiza estadísticas' },
-          ].map((item, index) => (
-            <div key={index} className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-orange-500 to-cyan-500 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-4">
-                {item.step}
+            { num: '01', title: 'Registrate', desc: 'Crea tu cuenta gratis' },
+            { num: '02', title: 'Configura', desc: 'Añade tu evento y tickets' },
+            { num: '03', title: 'Comparte', desc: 'Envia links a tus invitados' },
+            { num: '04', title: 'Gestiona', desc: 'Controla todo en tiempo real' },
+          ].map((step, i) => (
+            <div key={i} className="relative">
+              {/* Connector line */}
+              {i < 3 && (
+                <div className="hidden md:block absolute top-6 left-[60%] w-full h-px bg-gradient-to-r from-purple-500/40 to-transparent" />
+              )}
+              <div className="relative">
+                <div className="w-12 h-12 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+                  <span className="text-sm font-bold text-purple-400">{step.num}</span>
+                </div>
+                <h3 className="font-semibold mb-1">{step.title}</h3>
+                <p className="text-sm text-zinc-500">{step.desc}</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">{item.title}</h3>
-              <p className="text-slate-300">{item.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative z-10 container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center bg-gradient-to-r from-orange-500/20 to-cyan-500/20 backdrop-blur-sm rounded-3xl p-12 border border-white/10">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            ¿Listo para comenzar?
-          </h2>
-          <p className="text-xl text-slate-300 mb-8">
-            Únete a cientos de organizadores que confían en NapEvents
-          </p>
-          <Link
-            href="/auth/register"
-            className="inline-block px-10 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 transition-all transform hover:scale-105 shadow-2xl"
-          >
-            Crear Cuenta Gratis
-          </Link>
+      <section className="relative z-10 max-w-6xl mx-auto px-6 py-24">
+        <div className="relative rounded-2xl bg-gradient-to-br from-purple-600/20 via-pink-600/10 to-purple-600/20 border border-purple-500/20 p-12 md:p-16 text-center overflow-hidden">
+          {/* Subtle decorative element */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
+
+          <div className="relative">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              ¿Listo para tu proximo evento?
+            </h2>
+            <p className="text-zinc-400 mb-8 max-w-md mx-auto">
+              Unete a miles de organizadores que ya confian en NapEvents.
+            </p>
+            <Link
+              href="/auth/register"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-zinc-900 rounded-xl font-semibold hover:bg-zinc-100 transition-colors"
+            >
+              Comenzar Gratis
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10 container mx-auto px-4 py-8 border-t border-white/10">
-        <div className="text-center text-slate-400">
-          <p>&copy; 2026 NapEvents. Todos los derechos reservados.</p>
+      <footer className="relative z-10 border-t border-white/5">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-zinc-400">NapEvents</span>
+            </div>
+
+            <p className="text-sm text-zinc-600">© 2024 NapEvents. Todos los derechos reservados.</p>
+
+            <div className="flex items-center gap-6 text-sm text-zinc-500">
+              <Link href="#" className="hover:text-white transition-colors">Terminos</Link>
+              <Link href="#" className="hover:text-white transition-colors">Privacidad</Link>
+              <Link href="#" className="hover:text-white transition-colors">Soporte</Link>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

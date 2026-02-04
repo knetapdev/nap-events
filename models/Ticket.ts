@@ -14,6 +14,7 @@ export interface ITicketDocument extends Document {
   checkedInBy?: Types.ObjectId;
   price: number;
   purchasedAt: Date;
+  companyId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,16 +72,22 @@ const TicketSchema = new Schema(
       type: Date,
       default: Date.now,
     },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-TicketSchema.index({ eventId: 1 });
+TicketSchema.index({ companyId: 1, eventId: 1 });
+TicketSchema.index({ companyId: 1, status: 1 });
+TicketSchema.index({ companyId: 1, qrCode: 1 });
 TicketSchema.index({ userId: 1 });
-TicketSchema.index({ qrCode: 1 });
-TicketSchema.index({ status: 1 });
 TicketSchema.index({ guestEmail: 1 });
 
 const Ticket: Model<ITicketDocument> =

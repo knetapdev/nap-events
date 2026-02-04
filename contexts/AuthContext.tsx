@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { JWTPayload } from '@/types';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   user: JWTPayload | null;
@@ -16,11 +17,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<JWTPayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
 
-  // Check if user is authenticated on mount
   useEffect(() => {
     refreshUser();
   }, []);
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setIsLoading(true);
       const response = await fetch('/api/auth/me', {
-        credentials: 'include', // Include cookies in request
+        credentials: 'include',
       });
 
       if (response.ok) {
@@ -39,16 +39,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             userId: data.data.id,
             email: data.data.email,
             role: data.data.role,
+            companyId: data.data.companyId,
           });
-        } else {
-          setUser(null);
         }
-      } else {
-        setUser(null);
       }
     } catch (error) {
-      console.error('Error refreshing user:', error);
       setUser(null);
+      toast.error(`Invalid response from server, ${error}`);
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -76,15 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userId: data.data.user.id,
           email: data.data.user.email,
           role: data.data.user.role,
+          companyId: data.data.user.companyId,
         });
 
         router.push('/dashboard');
-      } else {
-        throw new Error('Invalid response from server');
       }
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      toast.error(`Invalid response from server, ${error}`);
     }
   };
 
@@ -95,9 +90,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         credentials: 'include',
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      toast.error(`Invalid response from server, ${error}`);
     } finally {
-      // Clear all auth-related localStorage items
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('selected_event_id');

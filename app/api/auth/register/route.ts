@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+      companyId: user.companyId?.toString() ?? '',
     });
 
     const response = NextResponse.json<ApiResponse>(

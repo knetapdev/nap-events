@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken, getTokenFromHeader, getAuthCookie, hasPermission } from './auth';
 import { JWTPayload, Permission, ApiResponse, UserRole } from '@/types';
 import connectDB from './db';
-import { Event, EventAssignment } from '@/models';
+import { Event, EventAssignment, Company } from '@/models';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RouteContext = { params: Promise<any> };
@@ -95,11 +95,6 @@ export function withEventAccess(
         );
       }
 
-      // SUPER_ADMIN has access to everything
-      if (user.role === UserRole.SUPER_ADMIN) {
-        return handler(req, user, eventId);
-      }
-
       // Check if event exists
       const event = await Event.findById(eventId);
       if (!event) {
@@ -109,12 +104,26 @@ export function withEventAccess(
         );
       }
 
+      // SUPER_ADMIN has access to everything
+      if (user.role === UserRole.SUPER_ADMIN) {
+        return handler(req, user, eventId);
+      }
+
+      // Verify event belongs to user's company
+      if (event.companyId.toString() !== user.companyId) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: 'Access denied to this event' },
+          { status: 403 }
+        );
+      }
+
       // ADMIN: Check if user is creator or assigned
       if (user.role === UserRole.ADMIN) {
         const isCreator = event.createdBy.toString() === user.userId;
         const isAssigned = await EventAssignment.exists({
           userId: user.userId,
           eventId: eventId,
+          companyId: user.companyId,
         });
 
         if (isCreator || isAssigned) {
@@ -127,6 +136,7 @@ export function withEventAccess(
         const assignment = await EventAssignment.findOne({
           userId: user.userId,
           eventId: eventId,
+          companyId: user.companyId,
         });
 
         if (assignment) {
@@ -141,6 +151,59 @@ export function withEventAccess(
       );
     } catch (error) {
       console.error('Error in withEventAccess:', error);
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'Internal server error' },
+        { status: 500 }
+      );
+    }
+  });
+}
+
+export function withCompanyAccess(
+  handler: (req: NextRequest, user: JWTPayload, companyId: string) => Promise<NextResponse>
+) {
+  return withAuth(async (req: NextRequest, user: JWTPayload) => {
+    try {
+      await connectDB();
+
+      // Extract companyId from URL
+      const url = new URL(req.url);
+      const pathParts = url.pathname.split('/');
+      const companiesIndex = pathParts.indexOf('companies');
+      const companyId = companiesIndex !== -1 ? pathParts[companiesIndex + 1] : null;
+
+      if (!companyId) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: 'Company ID not found in URL' },
+          { status: 400 }
+        );
+      }
+
+      // SUPER_ADMIN has access to everything
+      if (user.role === UserRole.SUPER_ADMIN) {
+        return handler(req, user, companyId);
+      }
+
+      // Check if company exists
+      const company = await Company.findById(companyId);
+      if (!company) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: 'Company not found' },
+          { status: 404 }
+        );
+      }
+
+      // Verify user belongs to this company
+      if (company._id.toString() !== user.companyId) {
+        return NextResponse.json<ApiResponse>(
+          { success: false, error: 'Access denied to this company' },
+          { status: 403 }
+        );
+      }
+
+      return handler(req, user, companyId);
+    } catch (error) {
+      console.error('Error in withCompanyAccess:', error);
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Internal server error' },
         { status: 500 }

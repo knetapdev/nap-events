@@ -10,6 +10,7 @@ export interface IRegistrationLinkDocument extends Document {
   expiresAt?: Date;
   isActive: boolean;
   createdBy: Types.ObjectId;
+  companyId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -50,13 +51,19 @@ const RegistrationLinkSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-RegistrationLinkSchema.index({ code: 1 });
+RegistrationLinkSchema.index({ companyId: 1, code: 1 });
 RegistrationLinkSchema.index({ eventId: 1 });
 RegistrationLinkSchema.index({ isActive: 1 });
 

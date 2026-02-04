@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import { Event } from '@/models';
-import { withPermission } from '@/lib/middleware';
+import { withAuth, withPermission } from '@/lib/middleware';
 import { generateSlug } from '@/lib/utils';
-import { ApiResponse, JWTPayload, PERMISSIONS, EventStatus, TicketType } from '@/types';
+import { ApiResponse, JWTPayload, PERMISSIONS, EventStatus, TicketType, UserRole } from '@/types';
 
-async function getEvents(req: NextRequest) {
+async function getEvents(req: NextRequest, user: JWTPayload, _context: { params: Promise<any> }) {
   try {
     await connectDB();
 
@@ -16,6 +16,12 @@ async function getEvents(req: NextRequest) {
     const search = url.searchParams.get('search');
 
     const query: Record<string, unknown> = {};
+
+    // Filter by company (except SUPER_ADMIN)
+    if (user.role !== UserRole.SUPER_ADMIN) {
+      query.companyId = user.companyId;
+    }
+
     if (status) query.status = status;
     if (search) {
       query.$or = [
@@ -29,7 +35,8 @@ async function getEvents(req: NextRequest) {
         .sort({ startDate: -1 })
         .skip((page - 1) * limit)
         .limit(limit)
-        .populate('createdBy', 'name email'),
+        .populate('createdBy', 'name email')
+        .populate('companyId', 'name slug'),
       Event.countDocuments(query),
     ]);
 
@@ -52,24 +59,25 @@ async function getEvents(req: NextRequest) {
   }
 }
 
-async function createEvent(req: NextRequest, user: JWTPayload) {
+async function createEvent(req: NextRequest, user: JWTPayload, _context: { params: Promise<any> }) {
   try {
     await connectDB();
 
     const body = await req.json();
-    const { name, description, location, address, startDate, endDate, coverImage, ticketConfigs } = body;
+    const { name, description, location, address, startDate, endDate, coverImage, ticketConfigs, companyId } = body;
 
-    if (!name || !description || !location || !startDate || !endDate) {
+    if (!name || !description || !location || !startDate || !endDate || !companyId) {
       return NextResponse.json<ApiResponse>(
-        { success: false, error: 'Name, description, location, start date and end date are required' },
+        { success: false, error: 'CompanyId, Name, description, location, start date and end date are required' },
         { status: 400 }
       );
     }
 
     const slug = generateSlug(name);
-    const existingEvent = await Event.findOne({ slug });
+    const existingEvent = await Event.findOne({ slug, companyId });
     const finalSlug = existingEvent ? `${slug}-${Date.now().toString(36)}` : slug;
 
+    // todo:  configuracion de tickets y categorias
     const defaultTicketConfigs = ticketConfigs || [
       {
         type: TicketType.FREE,
@@ -103,6 +111,7 @@ async function createEvent(req: NextRequest, user: JWTPayload) {
       status: EventStatus.DRAFT,
       ticketConfigs: defaultTicketConfigs,
       createdBy: user.userId,
+      companyId: companyId,
     });
 
     return NextResponse.json<ApiResponse>(
@@ -114,7 +123,6 @@ async function createEvent(req: NextRequest, user: JWTPayload) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Create event error:', error);
     return NextResponse.json<ApiResponse>(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -122,5 +130,5 @@ async function createEvent(req: NextRequest, user: JWTPayload) {
   }
 }
 
-export const GET = getEvents;
+export const GET = withAuth(getEvents);
 export const POST = withPermission(PERMISSIONS.EVENT_CREATE, createEvent);

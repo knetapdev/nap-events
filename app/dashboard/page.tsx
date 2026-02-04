@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEvent } from '@/contexts/EventContext';
 import { hasPermission } from '@/lib/auth';
 import { PERMISSIONS } from '@/types';
+import EventSelector from '@/components/EventSelector';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -48,7 +49,7 @@ export default function DashboardPage() {
     <div className="space-y-10">
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
+        <div className="flex-1">
           <h1 className="text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight mb-2">
             Dashboard
           </h1>
@@ -63,12 +64,16 @@ export default function DashboardPage() {
         </div>
 
         {canCreateEvents && (
-          <Button asChild className="bg-primary hover:bg-primary/90 text-white border-none px-8 py-4 rounded-xl font-bold h-auto">
-            <Link href="/dashboard/events/new" className="flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              Nuevo Evento
-            </Link>
-          </Button>
+          <div className='flex flex-row gap-2'>
+            <EventSelector withLabel={false} withDetails={false} />
+
+            {/* <Button asChild className="bg-primary hover:bg-primary/90 text-white border-none px-8 py-2 rounded-xl font-bold h-12 mt-4">
+              <Link href="/dashboard/events/new" className="flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                Nuevo Evento
+              </Link>
+            </Button> */}
+          </div>
         )}
       </div>
 

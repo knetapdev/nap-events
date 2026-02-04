@@ -18,7 +18,8 @@ import {
 	ShieldCheck,
 	AlertTriangle,
 	Loader2,
-	X
+	X,
+	UsersRound
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -38,6 +39,10 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { useCompany } from '@/contexts/CompanyContext';
+import EventSelector from '@/components/EventSelector';
+import BulkAssignment from '@/components/BulkAssignment';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface EventAssignment {
 	_id: string;
@@ -60,14 +65,23 @@ interface User {
 }
 
 export default function AssignmentPage() {
-	const { selectedEvent } = useEvent();
+	const { selectedEvent, availableEvents } = useEvent();
 	const [assignments, setAssignments] = useState<EventAssignment[]>([]);
 	const [allUsers, setAllUsers] = useState<User[]>([]);
+	const [allCompanyUsers, setAllCompanyUsers] = useState<User[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [showAssignModal, setShowAssignModal] = useState(false);
 	const [selectedUserId, setSelectedUserId] = useState('');
 	const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.PROMOTER);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [activeTab, setActiveTab] = useState('current-team');
+	const { selectedCompany } = useCompany()
+
+	useEffect(() => {
+		if (selectedCompany?._id) {
+			loadAllCompanyUsers();
+		}
+	}, [selectedCompany]);
 
 	useEffect(() => {
 		if (selectedEvent) {
@@ -81,7 +95,7 @@ export default function AssignmentPage() {
 
 		try {
 			setIsLoading(true);
-			const response = await fetch(`/api/events/${selectedEvent._id}/assignments`, {
+			const response = await fetch(`/api/events/${selectedEvent._id}/assignments?companyId=${selectedCompany?._id}`, {
 				credentials: 'include',
 			});
 
@@ -89,8 +103,6 @@ export default function AssignmentPage() {
 
 			if (response.ok && data.success) {
 				setAssignments(data.data);
-			} else {
-				console.error('Error loading assignments:', data.error);
 			}
 		} catch (error) {
 			console.error('Error loading assignments:', error);
@@ -101,7 +113,7 @@ export default function AssignmentPage() {
 
 	const loadAllUsers = async () => {
 		try {
-			const response = await fetch('/api/users?limit=100', {
+			const response = await fetch(`/api/users?limit=100&companyId=${selectedCompany?._id}`, {
 				credentials: 'include',
 			});
 
@@ -116,6 +128,27 @@ export default function AssignmentPage() {
 		} catch (error) {
 			console.error('Error loading users:', error);
 		}
+	};
+
+	const loadAllCompanyUsers = async () => {
+		try {
+			const response = await fetch(`/api/users?limit=500&companyId=${selectedCompany?._id}`, {
+				credentials: 'include',
+			});
+
+			const data = await response.json();
+
+			if (response.ok && data.success) {
+				setAllCompanyUsers(data.data);
+			}
+		} catch (error) {
+			console.error('Error loading company users:', error);
+		}
+	};
+
+	const handleBulkAssignmentSuccess = () => {
+		loadAssignments();
+		loadAllCompanyUsers();
 	};
 
 	// Reload available users when assignments change
@@ -210,20 +243,6 @@ export default function AssignmentPage() {
 		);
 	};
 
-	if (!selectedEvent) {
-		return (
-			<ProtectedRoute requiredPermissions={[PERMISSIONS.USER_ASSIGN]}>
-				<div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-8 flex items-start gap-4">
-					<AlertTriangle className="w-8 h-8 text-yellow-500 shrink-0 mt-1" />
-					<div>
-						<h3 className="text-xl font-bold text-yellow-500 mb-2">No hay evento seleccionado</h3>
-						<p className="text-slate-400">Por favor, selecciona un evento desde el panel lateral para gestionar las asignaciones.</p>
-					</div>
-				</div>
-			</ProtectedRoute>
-		);
-	}
-
 	return (
 		<ProtectedRoute requiredPermissions={[PERMISSIONS.USER_ASSIGN]}>
 			<div className="space-y-8">
@@ -233,84 +252,144 @@ export default function AssignmentPage() {
 						<h1 className="text-4xl font-extrabold text-slate-950 dark:text-white tracking-tight mb-2">Asignación de Usuarios</h1>
 						<p className="text-slate-500 dark:text-slate-400 flex items-center gap-2">
 							<Users className="w-4 h-4 text-orange-500 dark:text-orange-400" />
-							Gestionando equipo para: <span className="text-orange-600 dark:text-orange-300 font-semibold">{selectedEvent.name}</span>
+							Gestiona el equipo de trabajo para tus eventos
 						</p>
 					</div>
-					<Button onClick={() => setShowAssignModal(true)} className="bg-primary hover:bg-primary/90 text-white font-bold px-8 h-12 rounded-xl border-none transition-colors">
-						<UserPlus className="w-5 h-5 mr-2" />
-						Asignar Miembro
-					</Button>
 				</div>
 
-				{/* Assignments List */}
-				{isLoading ? (
-					<div className="flex flex-col items-center justify-center py-24 glass-card rounded-3xl border-slate-200 dark:border-white/10">
-						<Loader2 className="h-12 w-12 text-orange-500 animate-spin mb-4" />
-						<p className="text-slate-500 dark:text-slate-400 font-medium">Cargando equipo del evento...</p>
-					</div>
-				) : assignments.length === 0 ? (
-					<Card className="glass-card border-slate-200 dark:border-white/10 border-dashed py-16 text-center rounded-3xl shadow-none">
-						<CardContent className="space-y-6">
-							<div className="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto">
-								<Users className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+				{/* Tabs */}
+				<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+					<TabsList className="bg-slate-100 dark:bg-white/5 p-1 rounded-xl h-auto">
+						<TabsTrigger
+							value="current-team"
+							className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-primary rounded-lg px-6 py-3 text-sm font-semibold transition-all"
+						>
+							<Users className="w-4 h-4 mr-2" />
+							Equipo Actual
+						</TabsTrigger>
+						<TabsTrigger
+							value="bulk-assign"
+							className="data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-primary rounded-lg px-6 py-3 text-sm font-semibold transition-all"
+						>
+							<UsersRound className="w-4 h-4 mr-2" />
+							Asignación Masiva
+						</TabsTrigger>
+					</TabsList>
+
+					{/* Current Team Tab */}
+					<TabsContent value="current-team" className="mt-6">
+						{!selectedEvent ? (
+							<div className="bg-yellow-500/10 border border-yellow-500/20 rounded-2xl p-8 flex items-start gap-4">
+								<AlertTriangle className="w-8 h-8 text-yellow-500 shrink-0 mt-1" />
+								<div>
+									<h3 className="text-xl font-bold text-yellow-500 mb-2">No hay evento seleccionado</h3>
+									<p className="text-slate-400">Por favor, selecciona un evento desde el panel lateral para gestionar las asignaciones.</p>
+								</div>
 							</div>
-							<div>
-								<CardTitle className="text-2xl font-bold text-slate-900 dark:text-white mb-2">No hay equipo todavía</CardTitle>
-								<CardDescription className="text-slate-500 dark:text-slate-500 max-w-sm mx-auto">Asigna promotores y personal para que te ayuden a gestionar el evento y las validaciones.</CardDescription>
-							</div>
-							<Button onClick={() => setShowAssignModal(true)} variant="outline" className="border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 px-8 rounded-xl font-bold">
-								Empezar a Asignar
-							</Button>
-						</CardContent>
-					</Card>
-				) : (
-					<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-						{assignments.map((assignment) => (
-							<Card
-								key={assignment._id}
-								className="glass-card border-slate-200 dark:border-white/10 hover:border-orange-500/30 transition-all duration-300 group rounded-3xl overflow-hidden shadow-sm dark:shadow-none"
-							>
-								<CardContent className="p-6">
-									<div className="flex items-start justify-between">
-										<div className="flex items-center space-x-4">
-											<Avatar className="w-14 h-14 border-2 border-slate-100 dark:border-white/5 ring-2 ring-orange-500/10 dark:ring-orange-500/20">
-												<AvatarImage src="" />
-												<AvatarFallback className="bg-primary text-white text-xl font-bold">
-													{assignment.userId.name.charAt(0).toUpperCase()}
-												</AvatarFallback>
-											</Avatar>
-											<div>
-												<h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors uppercase tracking-tight">{assignment.userId.name}</h3>
-												<p className="text-slate-500 dark:text-slate-400 text-xs truncate max-w-[150px] font-medium">{assignment.userId.email}</p>
-											</div>
+						) : (
+							<div className="space-y-6">
+								{/* Event Info and Actions */}
+								<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-slate-50 dark:bg-white/5 rounded-2xl">
+									<div className="flex items-center gap-3">
+										<div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+											<Calendar className="w-5 h-5 text-primary" />
 										</div>
-										<Button
-											variant="ghost"
-											size="icon"
-											onClick={() => handleRemoveAssignment(assignment._id, assignment.userId.name)}
-											className="text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-full"
-										>
-											<Trash2 className="w-4 h-4" />
+										<div>
+											<p className="text-xs text-slate-500 uppercase font-bold">Evento Seleccionado</p>
+											<p className="text-lg font-bold text-slate-900 dark:text-white">{selectedEvent.name}</p>
+										</div>
+									</div>
+									<div className="flex items-center gap-3">
+										<EventSelector withLabel={false} withDetails={false} />
+										<Button onClick={() => setShowAssignModal(true)} className="bg-primary hover:bg-primary/90 text-white font-bold px-6 h-11 rounded-xl border-none transition-colors">
+											<UserPlus className="w-4 h-4 mr-2" />
+											Asignar Miembro
 										</Button>
 									</div>
+								</div>
 
-									<Separator className="my-5 bg-slate-100 dark:bg-white/5" />
-
-									<div className="flex items-center justify-between">
-										<div className="flex flex-col gap-1">
-											<span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Rol Evento</span>
-											{getRoleBadge(assignment.role)}
-										</div>
-										<div className="flex flex-col gap-1 items-end">
-											<span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Rol Global</span>
-											{getRoleBadge(assignment.userId.role)}
-										</div>
+								{/* Assignments List */}
+								{isLoading ? (
+									<div className="flex flex-col items-center justify-center py-24 glass-card rounded-3xl border-slate-200 dark:border-white/10">
+										<Loader2 className="h-12 w-12 text-orange-500 animate-spin mb-4" />
+										<p className="text-slate-500 dark:text-slate-400 font-medium">Cargando equipo del evento...</p>
 									</div>
-								</CardContent>
-							</Card>
-						))}
-					</div>
-				)}
+								) : assignments.length === 0 ? (
+									<Card className="glass-card border-slate-200 dark:border-white/10 border-dashed py-16 text-center rounded-3xl shadow-none">
+										<CardContent className="space-y-6">
+											<div className="w-20 h-20 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center mx-auto">
+												<Users className="w-10 h-10 text-slate-300 dark:text-slate-700" />
+											</div>
+											<div>
+												<CardTitle className="text-2xl font-bold text-slate-900 dark:text-white mb-2">No hay equipo todavía</CardTitle>
+												<CardDescription className="text-slate-500 dark:text-slate-500 max-w-sm mx-auto">Asigna promotores y personal para que te ayuden a gestionar el evento y las validaciones.</CardDescription>
+											</div>
+											<Button onClick={() => setShowAssignModal(true)} variant="outline" className="border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 px-8 rounded-xl font-bold">
+												Empezar a Asignar
+											</Button>
+										</CardContent>
+									</Card>
+								) : (
+									<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+										{assignments.map((assignment) => (
+											<Card
+												key={assignment._id}
+												className="glass-card border-slate-200 dark:border-white/10 hover:border-orange-500/30 transition-all duration-300 group rounded-3xl overflow-hidden shadow-sm dark:shadow-none"
+											>
+												<CardContent className="p-6">
+													<div className="flex items-start justify-between">
+														<div className="flex items-center space-x-4">
+															<Avatar className="w-14 h-14 border-2 border-slate-100 dark:border-white/5 ring-2 ring-orange-500/10 dark:ring-orange-500/20">
+																<AvatarImage src="" />
+																<AvatarFallback className="bg-primary text-white text-xl font-bold">
+																	{assignment.userId.name.charAt(0).toUpperCase()}
+																</AvatarFallback>
+															</Avatar>
+															<div>
+																<h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors uppercase tracking-tight">{assignment.userId.name}</h3>
+																<p className="text-slate-500 dark:text-slate-400 text-xs truncate max-w-[150px] font-medium">{assignment.userId.email}</p>
+															</div>
+														</div>
+														<Button
+															variant="ghost"
+															size="icon"
+															onClick={() => handleRemoveAssignment(assignment._id, assignment.userId.name)}
+															className="text-slate-500 hover:text-red-400 hover:bg-red-400/10 rounded-full"
+														>
+															<Trash2 className="w-4 h-4" />
+														</Button>
+													</div>
+
+													<Separator className="my-5 bg-slate-100 dark:bg-white/5" />
+
+													<div className="flex items-center justify-between">
+														<div className="flex flex-col gap-1">
+															<span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Rol Evento</span>
+															{getRoleBadge(assignment.role)}
+														</div>
+														<div className="flex flex-col gap-1 items-end">
+															<span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Rol Global</span>
+															{getRoleBadge(assignment.userId.role)}
+														</div>
+													</div>
+												</CardContent>
+											</Card>
+										))}
+									</div>
+								)}
+							</div>
+						)}
+					</TabsContent>
+
+					{/* Bulk Assignment Tab */}
+					<TabsContent value="bulk-assign" className="mt-6">
+						<BulkAssignment
+							availableEvents={availableEvents}
+							allUsers={allCompanyUsers}
+							onSuccess={handleBulkAssignmentSuccess}
+						/>
+					</TabsContent>
+				</Tabs>
 
 				{/* Assign User Modal */}
 				<Dialog open={showAssignModal} onOpenChange={setShowAssignModal}>
@@ -321,7 +400,7 @@ export default function AssignmentPage() {
 								Asignar Miembro
 							</DialogTitle>
 							<DialogDescription className="text-slate-500 dark:text-slate-400 pt-2">
-								Asigna a un usuario del sistema un rol específico para <strong className="text-orange-600 dark:text-orange-400">{selectedEvent.name}</strong>.
+								Asigna a un usuario del sistema un rol específico para <strong className="text-orange-600 dark:text-orange-400">{selectedEvent?.name}</strong>.
 							</DialogDescription>
 						</DialogHeader>
 

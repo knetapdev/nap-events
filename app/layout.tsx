@@ -1,22 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Syne, Poppins } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { CompanyProvider } from "@/contexts/CompanyContext";
 import { EventProvider } from "@/contexts/EventContext";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const syne = Syne({
+  variable: "--font-syne",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
-  title: "NapEvents - Sistema de Gestión de Eventos",
-  description: "Plataforma para gestión de eventos, venta de entradas y control de acceso",
+  title: "NapEvents - Donde La Fiesta Cobra Vida",
+  description: "La plataforma definitiva para gestión de eventos, venta de entradas y experiencias inolvidables",
 };
 
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -30,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${syne.variable} ${poppins.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
@@ -39,9 +42,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <EventProvider>
-              {children}
-            </EventProvider>
+            <CompanyProvider>
+              <EventProvider>
+                {children}
+              </EventProvider>
+            </CompanyProvider>
           </AuthProvider>
           <Toaster position="top-right" richColors />
         </ThemeProvider>

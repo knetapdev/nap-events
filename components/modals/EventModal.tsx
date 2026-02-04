@@ -64,9 +64,11 @@ interface EventModalProps {
 	onClose: () => void;
 	event?: IEvent | null;
 	reloadEvents: () => void;
+	companyId: string;
 }
 
-export function EventModal({ isOpen, onClose, event, reloadEvents }: EventModalProps) {
+export function EventModal({ isOpen, onClose, event, reloadEvents, companyId }: EventModalProps) {
+
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<EventFormValues>({
@@ -115,11 +117,14 @@ export function EventModal({ isOpen, onClose, event, reloadEvents }: EventModalP
 			const url = event ? `/api/events/${event._id}` : '/api/events';
 			const method = event ? 'PUT' : 'POST';
 
+			console.log(companyId)
+			console.log(event?.companyId)
+
 			const response = await fetch(url, {
 				method,
 				headers: { 'Content-Type': 'application/json' },
 				credentials: 'include',
-				body: JSON.stringify(values),
+				body: JSON.stringify({ ...values, companyId: companyId ? companyId : event?.companyId }),
 			});
 
 			const data = await response.json();

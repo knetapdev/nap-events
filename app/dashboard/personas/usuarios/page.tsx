@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useCompany } from '@/contexts/CompanyContext';
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<IUser[]>([]);
@@ -30,6 +31,7 @@ export default function UsersManagementPage() {
   const confirmModal = useModal<IUser>();
   const passwordModal = useModal<IUser>();
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const { selectedCompany } = useCompany();
 
   useEffect(() => {
     loadUsers();
@@ -50,17 +52,13 @@ export default function UsersManagementPage() {
   const loadUsers = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/users?limit=1000`, {
+      const response = await fetch(`/api/users?companyId=${selectedCompany?._id}`, {
         credentials: 'include',
       });
 
       const data = await response.json();
 
-      if (response.ok && data.success) {
-        setUsers(data.data);
-      } else {
-        toast.error('Error al cargar usuarios');
-      }
+      if (response.ok && data.success) setUsers(data.data);
     } catch (error) {
       toast.error(`Error al cargar usuarios:  ${error}`);
     } finally {
@@ -163,7 +161,7 @@ export default function UsersManagementPage() {
             columns={columns}
             data={users}
             isLoading={isLoading}
-            onRowClick={handleEdit}
+            // onRowClick={handleEdit}
             searchKey="name"
             searchPlaceholder="Buscar por nombre o email..."
             renderToolbar={(table) => (
@@ -202,6 +200,7 @@ export default function UsersManagementPage() {
             onClose={userModal.onClose}
             user={userModal.data}
             reloadUsers={loadUsers}
+            selectedCompanyId={selectedCompany?._id ?? ''}
           />
         )}
 

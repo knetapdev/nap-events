@@ -14,6 +14,7 @@ export interface IEventDocument extends Document {
   ticketConfigs: ITicketConfig[];
   shareableLink: string;
   createdBy: Types.ObjectId;
+  companyId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -106,15 +107,21 @@ const EventSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-EventSchema.index({ slug: 1 });
-EventSchema.index({ status: 1 });
-EventSchema.index({ startDate: 1 });
+EventSchema.index({ companyId: 1, status: 1 });
+EventSchema.index({ companyId: 1, startDate: 1 });
+EventSchema.index({ companyId: 1, slug: 1 });
 EventSchema.index({ createdBy: 1 });
 EventSchema.index({ shareableLink: 1 });
 

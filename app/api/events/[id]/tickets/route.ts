@@ -101,6 +101,7 @@ async function createTicketHandler(req: NextRequest, user: JWTPayload, eventId: 
         qrCode: generateQRCode(),
         price: ticketConfig.price,
         purchasedAt: new Date(),
+        companyId: event.companyId,
       });
       tickets.push(ticket);
     }

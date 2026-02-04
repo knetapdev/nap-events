@@ -65,6 +65,7 @@ async function createLinkHandler(req: NextRequest, user: JWTPayload, eventId: st
       code: generateShareableCode(10),
       ticketType,
       createdBy: user.userId,
+      companyId: event.companyId,
     };
     if (maxUses) linkData.maxUses = maxUses;
     if (expiresAt) linkData.expiresAt = new Date(expiresAt);

@@ -8,8 +8,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
-export default function EventSelector({ withLabel = true }: { withLabel?: boolean }) {
+export default function EventSelector({ withLabel = true, withDetails = true }: { withLabel?: boolean, withDetails?: boolean }) {
   const { availableEvents, selectedEvent, selectEvent, isLoadingEvents } = useEvent();
 
   if (isLoadingEvents) {
@@ -32,7 +33,7 @@ export default function EventSelector({ withLabel = true }: { withLabel?: boolea
   }
 
   return (
-    <div className="px-4 py-4 border-b border-slate-200 dark:border-white/10 min-w-[200px]">
+    <div className="px-4 py-4 min-w-[200px]">
       {
         withLabel && (
           <label className="text-[10px] uppercase tracking-wider font-bold text-slate-500 mb-1.5 block px-1">
@@ -45,7 +46,12 @@ export default function EventSelector({ withLabel = true }: { withLabel?: boolea
         value={selectedEvent?._id}
         onValueChange={(value) => selectEvent(value)}
       >
-        <SelectTrigger className="min-w-[380px] w-full min-h-12 bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all h-20 rounded-lg">
+        <SelectTrigger className={cn(
+          withDetails
+            ? 'min-w-[280px] w-full'
+            : 'w-auto',
+          'min-h-12 h-20 rounded-lg bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all'
+        )}>
           <SelectValue placeholder="Seleccionar evento" />
         </SelectTrigger>
         <SelectContent
@@ -60,8 +66,12 @@ export default function EventSelector({ withLabel = true }: { withLabel?: boolea
               className="focus:bg-primary focus:text-white cursor-pointer py-3 w-full"
             >
               <div className="flex flex-row justify-center items-center w-full text-center gap-2">
-                <span className="text-base font-medium w-full text-center">{event.name} -</span>
-                <span className="text-[14px] text-slate-500 dark:text-slate-400 w-full text-center mt-0.5">{event.location}</span>
+                <span className="text-base font-medium w-full text-center">{event.name}</span>
+                {
+                  withDetails && (
+                    -  <span className="text-[14px] text-slate-500 dark:text-slate-400 w-full text-center mt-0.5">{event.location}</span>
+                  )
+                }
               </div>
             </SelectItem>
           ))}

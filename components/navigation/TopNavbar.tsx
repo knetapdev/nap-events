@@ -5,14 +5,7 @@ import Link from 'next/link';
 import { Menu, X, User, Settings, LogOut } from 'lucide-react';
 import { ThemeToggle } from '../ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEvent } from '@/contexts/EventContext';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import CompanySelector from '../CompanySelector';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +14,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import EventSelector from '../EventSelector';
 
 interface TopNavbarProps {
   sidebarOpen: boolean;
@@ -30,7 +22,6 @@ interface TopNavbarProps {
 
 export default function TopNavbar({ sidebarOpen, setSidebarOpen }: TopNavbarProps) {
   const { user, logout } = useAuth();
-  const { availableEvents, selectedEvent, selectEvent, isLoadingEvents } = useEvent();
 
   if (!user) return null;
 
@@ -49,49 +40,14 @@ export default function TopNavbar({ sidebarOpen, setSidebarOpen }: TopNavbarProp
 
           <Link href="/dashboard" className="flex items-center gap-2">
             <span className="text-3xl font-bold text-primary">
-              NapEvent
+              NapEvents
             </span>
           </Link>
         </div>
 
-        {/* Center Section: Event Selector */}
+        {/* Center Section: Company Selector (SUPER_ADMIN only) */}
         <div className="flex-1 flex justify-center max-w-[400px]">
-          {!isLoadingEvents && availableEvents.length > 0 && (
-            // <div className="w-full">
-            //   <Select
-            //     value={selectedEvent?._id}
-            //     onValueChange={(value) => selectEvent(value)}
-            //   >
-            //     <SelectTrigger className="w-full bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 transition-all h-10 rounded-lg">
-            //       <SelectValue placeholder="Seleccionar evento" />
-            //     </SelectTrigger>
-            //     <SelectContent
-            //       position="popper"
-            //       sideOffset={4}
-            //       className="bg-white dark:bg-slate-900 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white rounded-xl shadow-xl w-[--radix-select-trigger-width]"
-            //     >
-            //       {availableEvents.map((event) => (
-            //         <SelectItem
-            //           key={event._id}
-            //           value={event._id}
-            //           className="focus:bg-blue-600 focus:text-white cursor-pointer py-3"
-            //         >
-            //           <div className="flex flex-col">
-            //             <span className="font-medium text-sm">{event.name}</span>
-            //             <span className="text-[10px] text-slate-500 dark:text-slate-400">{event.location}</span>
-            //           </div>
-            //         </SelectItem>
-            //       ))}
-            //     </SelectContent>
-            //   </Select>
-            // </div>
-            // <></>
-            <EventSelector withLabel={false} />
-          )}
-
-          {isLoadingEvents && (
-            <div className="w-full h-10 bg-slate-100 dark:bg-white/5 rounded-lg animate-pulse" />
-          )}
+          <CompanySelector withLabel={false} />
         </div>
 
         {/* Right Section: Theme Toggle + User Menu */}

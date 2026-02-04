@@ -43,6 +43,7 @@ export interface UserModalProps {
 	onClose: () => void;
 	user: IUser | null;
 	reloadUsers: () => void;
+	selectedCompanyId?: string;
 }
 
 export const UserModal = ({
@@ -50,6 +51,7 @@ export const UserModal = ({
 	onClose,
 	user,
 	reloadUsers,
+	selectedCompanyId
 }: UserModalProps) => {
 	const isEditing = !!user;
 
@@ -94,6 +96,7 @@ export const UserModal = ({
 				email: values.email,
 				phone: values.phone,
 				role: values.role,
+				companyId: selectedCompanyId,
 			};
 
 			if (!isEditing || values.password) {
@@ -113,6 +116,7 @@ export const UserModal = ({
 				import('sonner').then(({ toast }) => {
 					toast.success(isEditing ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente');
 				});
+
 				reloadUsers();
 				onClose();
 			} else {
@@ -121,7 +125,6 @@ export const UserModal = ({
 				});
 			}
 		} catch (error) {
-			console.error('Error saving user:', error);
 			import('sonner').then(({ toast }) => {
 				toast.error('Error al guardar el usuario');
 			});

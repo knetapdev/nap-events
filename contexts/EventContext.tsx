@@ -1,8 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { IEvent } from '@/types';
 import { useAuth } from './AuthContext';
+import { useCompany } from './CompanyContext';
+import { toast } from 'sonner';
 
 interface EventContextType {
   availableEvents: IEvent[];
@@ -23,18 +25,28 @@ export function EventProvider({ children }: { children: ReactNode }) {
   const [selectedEvent, setSelectedEvent] = useState<IEvent | null>(null);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const { isAuthenticated, user } = useAuth();
+  const { activeCompanyId, isLoadingCompanies, selectedCompany } = useCompany();
 
-  // Load events when user is authenticated
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && user && !isLoadingCompanies) {
       refreshEvents();
     } else {
       setAvailableEvents([]);
       setSelectedEvent(null);
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, isLoadingCompanies]);
 
-  // Restore selected event from localStorage when events are loaded
+  useEffect(() => {
+    if (!isAuthenticated || !user || isLoadingCompanies) return;
+    if (!activeCompanyId) return;
+
+    setAvailableEvents([]);
+    setSelectedEvent(null);
+    localStorage.removeItem(SELECTED_EVENT_KEY);
+
+    refreshEvents();
+  }, [activeCompanyId, isAuthenticated, user, isLoadingCompanies]);
+
   useEffect(() => {
     if (availableEvents.length > 0) {
       const savedEventId = localStorage.getItem(SELECTED_EVENT_KEY);
@@ -47,55 +59,55 @@ export function EventProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // If no saved event or saved event not found, select the first one
       setSelectedEvent(availableEvents[0]);
       localStorage.setItem(SELECTED_EVENT_KEY, availableEvents[0]._id);
     }
   }, [availableEvents]);
 
-  const refreshEvents = async () => {
+
+  // todo : revisar
+  console.log(activeCompanyId)
+  const refreshEvents = useCallback(async () => {
     try {
       setIsLoadingEvents(true);
-      const response = await fetch('/api/events/my-events', {
-        credentials: 'include',
-      });
 
-      console.log(await response)
-      if (response.ok) {
-        console.log('paso')
-        const data = await response.json();
-        if (data.success && Array.isArray(data.data)) {
-          setAvailableEvents(data.data);
-        } else {
-          setAvailableEvents([]);
-        }
-      } else {
+      const response = await fetch(
+        `/api/events/my-events?companyId=${activeCompanyId}`,
+        { credentials: 'include' }
+      );
+
+      if (!response.ok) {
         setAvailableEvents([]);
+        return;
       }
+
+      const data = await response.json();
+      setAvailableEvents(Array.isArray(data.data) ? data.data : []);
     } catch (error) {
-      console.error('Error loading events:', error);
+      toast.error(`Invalid response from server, ${error}`);
       setAvailableEvents([]);
     } finally {
       setIsLoadingEvents(false);
     }
-  };
+  }, [activeCompanyId]);
 
-  const selectEvent = (eventId: string) => {
+  const selectEvent = useCallback((eventId: string) => {
     const event = availableEvents.find((e) => e._id === eventId);
     if (event) {
       setSelectedEvent(event);
       localStorage.setItem(SELECTED_EVENT_KEY, eventId);
     }
-  };
+  }, [availableEvents]);
 
-  const canAccessEvent = (eventId: string): boolean => {
+  // todo : Aun no se usa pero podria servir
+  const canAccessEvent = useCallback((eventId: string): boolean => {
     return availableEvents.some((e) => e._id === eventId);
-  };
+  }, [availableEvents]);
 
-  const addEventOptimistic = (newEvent: IEvent) => {
+  const addEventOptimistic = useCallback((newEvent: IEvent) => {
     setAvailableEvents(prev => [newEvent, ...prev]);
     selectEvent(newEvent._id);
-  };
+  }, [selectEvent]);
 
   const value: EventContextType = {
     availableEvents,

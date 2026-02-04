@@ -7,6 +7,7 @@ export interface IEventAssignmentDocument extends Document {
   role: UserRole;
   permissions: string[];
   assignedBy: Types.ObjectId;
+  companyId: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,13 +37,19 @@ const EventAssignmentSchema = new Schema(
       ref: 'User',
       required: true,
     },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-EventAssignmentSchema.index({ userId: 1, eventId: 1 }, { unique: true });
+EventAssignmentSchema.index({ companyId: 1, userId: 1, eventId: 1 }, { unique: true });
 EventAssignmentSchema.index({ eventId: 1 });
 EventAssignmentSchema.index({ userId: 1 });
 

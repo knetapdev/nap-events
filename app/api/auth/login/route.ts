@@ -18,7 +18,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ email: email.toLowerCase() }).select('+password').lean();
+
     if (!user) {
       return NextResponse.json<ApiResponse>(
         { success: false, error: 'Invalid credentials' },
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest) {
       userId: user._id.toString(),
       email: user.email,
       role: user.role,
+      companyId: user.companyId?.toString(),
     });
 
     const response = NextResponse.json<ApiResponse>({
@@ -56,12 +58,12 @@ export async function POST(req: NextRequest) {
           email: user.email,
           name: user.name,
           role: user.role,
+          companyId: user.companyId,
         },
       },
       message: 'Login successful',
     });
 
-    // Set JWT in httpOnly cookie
     setAuthCookie(token, response);
 
     return response;

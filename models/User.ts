@@ -8,6 +8,7 @@ export interface IUserDocument extends Document {
   phone?: string;
   role: UserRole;
   isActive: boolean;
+  companyId: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,14 +46,20 @@ const UserSchema = new Schema(
       type: Boolean,
       default: true,
     },
+    companyId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Company',
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// UserSchema.index({ email: 1 });
-// UserSchema.index({ role: 1 });
+UserSchema.index({ companyId: 1, role: 1 });
+UserSchema.index({ companyId: 1, email: 1 });
 
 const User: Model<IUserDocument> =
   mongoose.models.User || mongoose.model<IUserDocument>('User', UserSchema);

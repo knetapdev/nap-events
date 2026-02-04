@@ -26,9 +26,11 @@ import {
 } from '@/components/ui/select';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { EventModal } from '@/components/modals/EventModal';
+import { useCompany } from '@/contexts/CompanyContext';
 
 export default function EventsPage() {
   const { user } = useAuth();
+  const { selectedCompany } = useCompany();
   const { availableEvents, refreshEvents, isLoadingEvents } = useEvent();
   const deleteModal = useModal<IEvent>();
   const editModal = useModal<IEvent>();
@@ -36,6 +38,7 @@ export default function EventsPage() {
 
   const canCreateEvents = hasPermission(user!.role, PERMISSIONS.EVENT_CREATE);
 
+  console.log(availableEvents)
   const handleEdit = (event: IEvent) => {
     editModal.onOpen(event);
   };
@@ -96,6 +99,8 @@ export default function EventsPage() {
     }),
     []);
 
+
+  console.log(editModal)
   return (
     <ProtectedRoute requiredPermissions={[PERMISSIONS.EVENT_READ]}>
       <div className="space-y-8">
@@ -183,6 +188,7 @@ export default function EventsPage() {
             onClose={editModal.onClose}
             event={editModal.data}
             reloadEvents={refreshEvents}
+            companyId={selectedCompany?._id!}
           />
         )}
       </div>

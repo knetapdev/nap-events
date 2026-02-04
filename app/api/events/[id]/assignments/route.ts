@@ -11,8 +11,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     await connectDB();
 
     const { id } = await params;
+    const url = new URL(req.url);
 
-    const assignments = await EventAssignment.find({ eventId: id })
+    const companyId = url.searchParams.get('companyId') || '';
+
+    const assignments = await EventAssignment.find({ eventId: id, companyId })
       .populate('userId', 'name email phone role')
       .populate('assignedBy', 'name email');
 
@@ -68,6 +71,14 @@ async function createAssignmentHandler(req: NextRequest, user: JWTPayload, event
       );
     }
 
+    // Verify targetUser belongs to same company (except for SUPER_ADMIN)
+    if (user.role !== UserRole.SUPER_ADMIN && targetUser.companyId.toString() !== user.companyId) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, error: 'User must belong to the same company' },
+        { status: 403 }
+      );
+    }
+
     const existingAssignment = await EventAssignment.findOne({ userId, eventId });
     if (existingAssignment) {
       return NextResponse.json<ApiResponse>(
@@ -84,6 +95,7 @@ async function createAssignmentHandler(req: NextRequest, user: JWTPayload, event
       role: validRole,
       permissions: assignmentPermissions,
       assignedBy: user.userId,
+      companyId: event.companyId,
     });
 
     const populatedAssignment = await EventAssignment.findById(assignment._id)
