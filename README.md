@@ -1,36 +1,294 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎉 NapEvents
 
-## Getting Started
+Sistema completo de gestión de eventos con venta de entradas, control de acceso mediante códigos QR y administración de equipos.
 
-First, run the development server:
+![NapEvents](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)
+![MongoDB](https://img.shields.io/badge/MongoDB-7.0-green?style=for-the-badge&logo=mongodb)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)
 
+## ✨ Características
+
+- 🎫 **Gestión de Entradas**: Crea entradas FREE, VIP y personalizadas
+- 📱 **Códigos QR**: Genera códigos QR únicos para cada entrada
+- 👥 **Equipos y Roles**: Sistema completo de permisos (Super Admin, Admin, Promotor, Staff, Usuario)
+- 🔗 **Enlaces Compartibles**: Genera enlaces para registro gratuito
+- 📊 **Reportes en Tiempo Real**: Estadísticas y métricas de tus eventos
+- 🔐 **Control de Acceso**: Check-in rápido con validación de tickets
+- 🔒 **Autenticación JWT**: Sistema seguro de autenticación
+
+## 🚀 Inicio Rápido
+
+### Requisitos Previos
+
+- Node.js 18+
+- pnpm
+- Docker y Docker Compose
+
+### Instalación
+
+1. **Instalar dependencias**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Iniciar MongoDB con Docker**
+```bash
+docker-compose up -d
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Esto levantará:
+- MongoDB en `localhost:27020`
+- Mongo Express (GUI) en `http://localhost:8081`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Crear super admin inicial**
+```bash
+pnpm seed
+```
 
-## Learn More
+**Credenciales del admin:**
+- Email: `admin@napevents.com`
+- Password: `admin123`
 
-To learn more about Next.js, take a look at the following resources:
+4. **Iniciar el servidor de desarrollo**
+```bash
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+La aplicación estará disponible en **http://localhost:3000**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📱 Páginas Disponibles
 
-## Deploy on Vercel
+### Públicas
+- **/** - Página principal increíble y llamativa
+- **/auth/login** - Inicio de sesión
+- **/auth/register** - Registro de usuarios
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Privadas (requieren autenticación)
+- **/dashboard** - Panel de control
+- **/dashboard/events** - Lista de eventos (próximamente)
+- **/dashboard/tickets** - Gestión de entradas (próximamente)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔐 Roles y Permisos
+
+| Rol | Permisos |
+|-----|----------|
+| **Super Admin** | Acceso total a todas las funciones |
+| **Admin** | Gestión de eventos, entradas y usuarios |
+| **Promoter** | Crear tickets y ver reportes |
+| **Staff** | Check-in de entradas |
+| **User** | Acceso básico |
+
+## 📡 API Endpoints
+
+### Autenticación
+```
+POST   /api/auth/register          - Registrar usuario
+POST   /api/auth/login             - Iniciar sesión
+GET    /api/auth/me                - Obtener usuario actual
+```
+
+### Eventos
+```
+GET    /api/events                 - Listar eventos
+POST   /api/events                 - Crear evento
+GET    /api/events/[id]            - Obtener evento
+PUT    /api/events/[id]            - Actualizar evento
+DELETE /api/events/[id]            - Eliminar evento
+```
+
+### Entradas
+```
+GET    /api/events/[id]/tickets    - Listar tickets
+POST   /api/events/[id]/tickets    - Crear ticket
+POST   /api/tickets/[id]/checkin   - Check-in
+GET    /api/tickets/verify/[qrCode] - Verificar ticket
+```
+
+### Asignaciones
+```
+GET    /api/events/[id]/assignments - Listar asignaciones
+POST   /api/events/[id]/assignments - Asignar usuario a evento
+```
+
+### Enlaces de Registro
+```
+GET    /api/events/[id]/registration-links - Listar enlaces
+POST   /api/events/[id]/registration-links - Crear enlace
+GET    /api/register/[code]                - Ver info del enlace
+POST   /api/register/[code]                - Registrarse con enlace
+```
+
+### Usuarios
+```
+GET    /api/users                  - Listar usuarios
+POST   /api/users                  - Crear usuario
+```
+
+## 🛠️ Stack Tecnológico
+
+- **Framework**: Next.js 16 (App Router)
+- **Styling**: Tailwind CSS 4
+- **Database**: MongoDB 7.0
+- **ODM**: Mongoose 9
+- **Authentication**: JWT (jsonwebtoken)
+- **Language**: TypeScript 5
+- **QR Codes**: qrcode
+- **Password**: bcryptjs
+
+## 📦 Estructura del Proyecto
+
+```
+nap-events/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   │   ├── auth/         # Autenticación
+│   │   ├── events/       # Eventos
+│   │   ├── tickets/      # Entradas
+│   │   ├── users/        # Usuarios
+│   │   └── register/     # Registro público
+│   ├── auth/              # Páginas de autenticación
+│   │   ├── login/        # Login
+│   │   └── register/     # Registro
+│   ├── dashboard/         # Panel de control
+│   └── page.tsx           # Página principal
+├── lib/                   # Utilidades
+│   ├── db.ts             # Conexión MongoDB
+│   ├── auth.ts           # JWT helpers
+│   ├── middleware.ts     # Auth middleware
+│   └── utils.ts          # Utilidades
+├── models/               # Modelos Mongoose
+│   ├── User.ts
+│   ├── Event.ts
+│   ├── Ticket.ts
+│   ├── EventAssignment.ts
+│   └── RegistrationLink.ts
+├── types/                # TypeScript types
+│   └── index.ts
+├── scripts/              # Scripts de utilidad
+│   └── seed.ts           # Crear super admin
+└── docker-compose.yml    # Docker config
+```
+
+## 🐳 Docker
+
+### Servicios Disponibles
+
+**MongoDB**
+- Puerto: 27020
+- Usuario: admin
+- Contraseña: admin123
+- Base de datos: nap_events_db
+
+**Mongo Express** (GUI Web)
+- Puerto: 8081
+- URL: http://localhost:8081
+- Usuario: admin
+- Contraseña: admin123
+
+### Comandos Útiles
+
+```bash
+# Iniciar servicios
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f mongodb
+
+# Detener servicios
+docker-compose down
+
+# Limpiar volúmenes (¡elimina todos los datos!)
+docker-compose down -v
+```
+
+## 🔧 Scripts Disponibles
+
+```bash
+# Desarrollo
+pnpm dev
+
+# Build para producción
+pnpm build
+
+# Iniciar en producción
+pnpm start
+
+# Linting
+pnpm lint
+
+# Crear super admin
+pnpm seed
+```
+
+## 🎨 Diseño
+
+La aplicación cuenta con un diseño moderno y atractivo:
+
+- ✨ Gradientes animados de fondo
+- 🌊 Animaciones suaves de "blob"
+- 📱 Diseño 100% responsive
+- 🌙 Tema oscuro elegante
+- 💎 Efectos glassmorphism
+- 🎭 Transiciones fluidas
+- 🎨 Paleta de colores purple-pink
+
+## 🔒 Seguridad
+
+- Autenticación JWT con tokens seguros
+- Passwords hasheados con bcryptjs
+- Validación de permisos por rol
+- Middleware de autenticación
+- Sanitización de inputs
+- MongoDB con autenticación habilitada
+
+## 📝 Variables de Entorno
+
+El archivo `.env.local` contiene:
+
+```env
+# MongoDB
+MONGODB_URI=mongodb://admin:admin123@localhost:27020/nap_events_db?authSource=admin
+
+# JWT
+JWT_SECRET=napevents-dev-secret-key-change-in-production
+JWT_EXPIRES_IN=7d
+
+# App
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_NAME=NapEvents
+```
+
+⚠️ **Importante**: Cambia el `JWT_SECRET` en producción.
+
+## 🚧 Próximas Funcionalidades
+
+- [ ] CRUD completo de eventos
+- [ ] Generación y descarga de QR codes
+- [ ] Escaneo de QR en tiempo real
+- [ ] Dashboard con gráficos
+- [ ] Exportación de reportes (PDF, Excel)
+- [ ] Notificaciones por email
+- [ ] Pasarela de pagos
+- [ ] Multi-idioma
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto es privado.
+
+## 👨‍💻 Autor
+
+**NetApp Peru**
+
+---
+
+**¿Necesitas ayuda?** Abre un issue en el repositorio o contacta al equipo de desarrollo.
+
+Desarrollado con ❤️ y ☕ por el equipo de NetApp Peru
