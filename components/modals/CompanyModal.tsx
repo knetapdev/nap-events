@@ -38,9 +38,9 @@ const companySchema = z.object({
 	address: z.string().optional(),
 	website: z.string().optional(),
 	taxId: z.string().optional(),
-	timezone: z.string().default('America/Lima'),
-	currency: z.string().default('PEN'),
-	language: z.string().default('es'),
+	timezone: z.string(),
+	currency: z.string(),
+	language: z.string(),
 });
 
 export interface CompanyModalProps {
