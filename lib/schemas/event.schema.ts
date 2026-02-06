@@ -7,17 +7,9 @@ export const createEventSchema = z.object({
   description: z.string().optional(),
   location: z.string().min(2, 'La ubicación es requerida'),
   address: z.string().optional(),
-  startDate: z.coerce.date({
-    required_error: 'La fecha de inicio es requerida',
-    invalid_type_error: 'Fecha inválida',
-  }),
-  endDate: z.coerce.date({
-    required_error: 'La fecha de fin es requerida',
-    invalid_type_error: 'Fecha inválida',
-  }),
-  status: z.enum(['draft', 'published', 'cancelled'], {
-    required_error: 'El estado es requerido',
-  }),
+  startDate: z.coerce.date({ message: 'La fecha de inicio es requerida' }),
+  endDate: z.coerce.date({ message: 'La fecha de fin es requerida' }),
+  status: z.enum(['draft', 'published', 'cancelled'], { message: 'El estado es requerido' }),
   coverImage: z.string().url('URL de imagen inválida').optional().or(z.literal('')),
 }).refine((data) => data.endDate > data.startDate, {
   message: 'La fecha de fin debe ser posterior a la fecha de inicio',
